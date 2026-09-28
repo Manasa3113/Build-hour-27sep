@@ -1,0 +1,74 @@
+Embeddings Preview - First 5 vectors (first 10 dimensions each)
+Model: sentence-transformers/all-MiniLM-L6-v2
+Total vectors in collection: 270
+Dimensions per vector: 384
+================================================================================
+
+Vector 1 (id: chunk_0)
+  Scheme: HDFC Large Cap Fund Direct Growth
+  Source: https://groww.in/mutual-funds/hdfc-large-cap-fund-direct-growth
+  First 10 dims: [-0.00092849 -0.05106472 -0.01625104  0.01104554  0.03375598  0.00430871
+  0.05939683 -0.02874818 -0.02907227 -0.01117203]
+  Text preview: Stocks
+Invest in Stocks
+Invest in stocks, ETFs, IPOs with fast orders. Track returns on your stock holdings and view real-time P&L on your positions.
+...
+
+Vector 2 (id: chunk_1)
+  Scheme: HDFC Large Cap Fund Direct Growth
+  Source: https://groww.in/mutual-funds/hdfc-large-cap-fund-direct-growth
+  First 10 dims: [-0.00283376 -0.06481431 -0.04662787  0.05158959  0.06818538  0.0388307
+  0.00099012 -0.02712616 -0.012472    0.0209385 ]
+  Text preview: Share Market Today
+Live news updates from stock market
+F&O
+Trade in Futures & Options
+Trade in F&O using the terminal. View charts, indicators, track ...
+
+Vector 3 (id: chunk_2)
+  Scheme: HDFC Large Cap Fund Direct Growth
+  Source: https://groww.in/mutual-funds/hdfc-large-cap-fund-direct-growth
+  First 10 dims: [-0.00877914 -0.01509448 -0.08827468 -0.00354012  0.02727737 -0.02115733
+  0.04865507 -0.02109249 -0.02932322  0.01505416]
+  Text preview: API trading
+Set up and execute trades through our API
+Mutual Funds
+Invest in Mutual Funds
+Invest in direct mutual funds at zero charges via lump sump ...
+
+Vector 4 (id: chunk_3)
+  Scheme: HDFC Large Cap Fund Direct Growth
+  Source: https://groww.in/mutual-funds/hdfc-large-cap-fund-direct-growth
+  First 10 dims: [ 0.08609871 -0.07202788 -0.08942526  0.01078727  0.0402644  -0.03162597
+ -0.00132076  0.01057002 -0.01102182 -0.0241785 ]
+  Text preview: Track Funds
+Import funds and track all investments in a single place
+Compare Funds
+More
+SIP calculator
+Estimate returns on a SIP
+Brokerage calculator
+...
+
+Vector 5 (id: chunk_4)
+  Scheme: HDFC Large Cap Fund Direct Growth
+  Source: https://groww.in/mutual-funds/hdfc-large-cap-fund-direct-growth
+  First 10 dims: [ 0.06155382 -0.03846681 -0.13681418  0.0285755  -0.00929387 -0.04399766
+  0.05660623  0.07987034  0.02203516  0.02845611]
+  Text preview: 3Y
+5Y
+All
+NAV: 25 Sep '26
+₹1,189.08
+Min. for SIP
+₹100
+Fund size (AUM)
+₹39,933.37 Cr
+Expense ratio
+1.03%
+Rating
+4
+Return calculator
+Monthly SIP
+One tim...
+
