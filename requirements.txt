@@ -6,6 +6,8 @@ langchain
 langchain-chroma
 langchain-community
 langchain-groq
+langchain-text-splitters
+httpx
 streamlit
 requests
 beautifulsoup4
