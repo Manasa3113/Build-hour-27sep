@@ -3,6 +3,7 @@ torch==2.14.0+cpu
 sentence-transformers
 chromadb
 langchain
+langchain-chroma
 langchain-community
 langchain-groq
 streamlit
