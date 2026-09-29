@@ -1,6 +1,7 @@
 import os
 import re
 import ssl
+import time
 
 os.environ["HF_HUB_DISABLE_XET"] = "1"
 
@@ -9,17 +10,19 @@ ssl._create_default_https_context = ssl._create_unverified_context
 import requests
 import chromadb
 
+from config import HF_API_TOKEN, HF_EMBEDDING_URL
+
 CHUNKS_FILE = "data/chunks/chunks.txt"
 CHROMA_DIR = "./chroma_db"
 COLLECTION_NAME = "hdfc_faq"
-EMBED_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
-HF_API_URL = f"https://api-inference.huggingface.co/models/{EMBED_MODEL}"
-HF_API_TOKEN = os.environ.get("HF_API_TOKEN", "")
 
 
 class HuggingFaceEmbeddingFunction:
     def __init__(self):
-        self._headers = {"Authorization": f"Bearer {HF_API_TOKEN}"}
+        self._headers = {
+            "Authorization": f"Bearer {HF_API_TOKEN}",
+            "Content-Type": "application/json",
+        }
 
     def __call__(self, input):
         return self.embed_documents(input)
@@ -31,14 +34,22 @@ class HuggingFaceEmbeddingFunction:
         return self._embed(texts)
 
     def _embed(self, texts):
-        resp = requests.post(
-            HF_API_URL,
-            headers=self._headers,
-            json={"inputs": texts},
-            timeout=60,
-        )
-        resp.raise_for_status()
-        return resp.json()
+        last_err = None
+        for attempt in range(3):
+            try:
+                resp = requests.post(
+                    HF_EMBEDDING_URL,
+                    headers=self._headers,
+                    json={"inputs": texts},
+                    timeout=30,
+                )
+                resp.raise_for_status()
+                return resp.json()
+            except Exception as e:
+                last_err = e
+                if attempt < 2:
+                    time.sleep(2)
+        raise last_err
 
 
 def parse_chunks_file(path):
