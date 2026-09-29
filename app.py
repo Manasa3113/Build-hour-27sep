@@ -16,21 +16,50 @@ from config import GROQ_API_KEY, GROQ_MODEL
 EMBED_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
 
 
+class FlatEmbeddingFunction:
+    def __init__(self, model_name):
+        self._fn = SentenceTransformerEmbeddingFunction(
+            model_name=model_name,
+            cache_folder="/tmp/hf_cache",
+            model_kwargs={"device": "cpu"},
+        )
+
+    def __call__(self, input):
+        result = self._fn(input)
+        if isinstance(result, list) and len(result) == 1 and isinstance(result[0], (list, tuple)):
+            return result[0]
+        return result
+
+    def embed_query(self, text):
+        return self._fn([text])[0]
+
+    def embed_documents(self, texts):
+        return self._fn(texts)
+
+
 @st.cache_resource
-def get_retriever():
-    embedding_fn = SentenceTransformerEmbeddingFunction(model_name=EMBED_MODEL)
+def get_embedding_fn():
+    return FlatEmbeddingFunction(EMBED_MODEL)
+
+
+@st.cache_resource
+def get_retriever(_embedding_fn):
     vectorstore = Chroma(
         persist_directory=CHROMA_DIR,
         collection_name=COLLECTION_NAME,
-        embedding_function=embedding_fn,
+        embedding_function=_embedding_fn,
     )
     return vectorstore.as_retriever(search_kwargs={"k": TOP_K})
 
 
 @st.cache_resource
-def get_answer_fn(_retriever):
-    llm = ChatGroq(groq_api_key=GROQ_API_KEY, model_name=GROQ_MODEL, temperature=0)
-    return build_rag_chain(llm, _retriever)
+def get_llm():
+    return ChatGroq(groq_api_key=GROQ_API_KEY, model_name=GROQ_MODEL, temperature=0)
+
+
+@st.cache_resource
+def get_answer_fn(_retriever, _llm):
+    return build_rag_chain(_llm, _retriever)
 
 
 def init_session():
@@ -69,7 +98,7 @@ def main():
         with st.chat_message("user"):
             st.markdown(prompt)
 
-        answer_fn = get_answer_fn(get_retriever())
+        answer_fn = get_answer_fn(get_retriever(get_embedding_fn()), get_llm())
 
         with st.chat_message("assistant"):
             with st.spinner("Thinking..."):
