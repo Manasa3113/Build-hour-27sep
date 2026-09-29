@@ -21,7 +21,6 @@ class FlatEmbeddingFunction:
         self._fn = SentenceTransformerEmbeddingFunction(
             model_name=model_name,
             cache_folder="/tmp/hf_cache",
-            model_kwargs={"device": "cpu"},
         )
 
     def __call__(self, input):
