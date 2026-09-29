@@ -4,6 +4,7 @@ sentence-transformers
 chromadb
 langchain
 langchain-community
+langchain-chroma
 langchain-groq
 streamlit
 requests
