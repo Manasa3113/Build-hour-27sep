@@ -1,58 +1,45 @@
 import os
 import ssl
-import time
 
 os.environ["HF_HUB_DISABLE_XET"] = "1"
 ssl._create_default_https_context = ssl._create_unverified_context
 
-import requests
 import streamlit as st
 from langchain_chroma import Chroma
 from langchain_groq import ChatGroq
+from chromadb.utils.embedding_functions import SentenceTransformerEmbeddingFunction
 
 from chains import build_rag_chain, CHROMA_DIR, COLLECTION_NAME, TOP_K
 from memory import ConversationMemory
-from config import GROQ_API_KEY, GROQ_MODEL, HF_API_TOKEN, HF_EMBEDDING_URL
+from config import GROQ_API_KEY, GROQ_MODEL
+
+EMBED_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
 
 
-class HuggingFaceEmbeddingFunction:
-    def __init__(self):
-        self._headers = {
-            "Authorization": f"Bearer {HF_API_TOKEN}",
-            "Content-Type": "application/json",
-        }
+class FlatEmbeddingFunction:
+    def __init__(self, model_name):
+        self._fn = SentenceTransformerEmbeddingFunction(
+            model_name=model_name,
+            cache_folder="/tmp/hf_cache",
+            model_kwargs={"device": "cpu"},
+        )
 
     def __call__(self, input):
-        return self.embed_documents(input)
+        result = self._fn(input)
+        if isinstance(result, list) and len(result) == 1 and isinstance(result[0], (list, tuple)):
+            return result[0]
+        return result
 
     def embed_query(self, text):
-        return self._embed([text])[0]
+        return self._fn([text])[0]
 
     def embed_documents(self, texts):
-        return self._embed(texts)
-
-    def _embed(self, texts):
-        last_err = None
-        for attempt in range(3):
-            try:
-                resp = requests.post(
-                    HF_EMBEDDING_URL,
-                    headers=self._headers,
-                    json={"inputs": texts},
-                    timeout=30,
-                )
-                resp.raise_for_status()
-                return resp.json()
-            except Exception as e:
-                last_err = e
-                if attempt < 2:
-                    time.sleep(2)
-        raise last_err
+        return self._fn(texts)
 
 
 @st.cache_resource
 def get_embedding_fn():
-    return HuggingFaceEmbeddingFunction()
+    return FlatEmbeddingFunction(EMBED_MODEL)
 
 
 @st.cache_resource

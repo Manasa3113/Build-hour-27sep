@@ -1,55 +1,18 @@
 import os
 import re
 import ssl
-import time
 
 os.environ["HF_HUB_DISABLE_XET"] = "1"
 
 ssl._create_default_https_context = ssl._create_unverified_context
 
-import requests
 import chromadb
-
-from config import HF_API_TOKEN, HF_EMBEDDING_URL
+from chromadb.utils.embedding_functions import SentenceTransformerEmbeddingFunction
 
 CHUNKS_FILE = "data/chunks/chunks.txt"
 CHROMA_DIR = "./chroma_db"
 COLLECTION_NAME = "hdfc_faq"
-
-
-class HuggingFaceEmbeddingFunction:
-    def __init__(self):
-        self._headers = {
-            "Authorization": f"Bearer {HF_API_TOKEN}",
-            "Content-Type": "application/json",
-        }
-
-    def __call__(self, input):
-        return self.embed_documents(input)
-
-    def embed_query(self, text):
-        return self._embed([text])[0]
-
-    def embed_documents(self, texts):
-        return self._embed(texts)
-
-    def _embed(self, texts):
-        last_err = None
-        for attempt in range(3):
-            try:
-                resp = requests.post(
-                    HF_EMBEDDING_URL,
-                    headers=self._headers,
-                    json={"inputs": texts},
-                    timeout=30,
-                )
-                resp.raise_for_status()
-                return resp.json()
-            except Exception as e:
-                last_err = e
-                if attempt < 2:
-                    time.sleep(2)
-        raise last_err
+EMBED_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
 
 
 def parse_chunks_file(path):
@@ -86,7 +49,7 @@ def main():
     chunks = parse_chunks_file(CHUNKS_FILE)
     print(f"Parsed {len(chunks)} chunks from {CHUNKS_FILE}")
 
-    embedding_fn = HuggingFaceEmbeddingFunction()
+    embedding_fn = SentenceTransformerEmbeddingFunction(model_name=EMBED_MODEL)
 
     client = chromadb.PersistentClient(path=CHROMA_DIR)
 
