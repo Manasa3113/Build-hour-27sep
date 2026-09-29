@@ -6,20 +6,39 @@ os.environ["HF_HUB_DISABLE_XET"] = "1"
 
 ssl._create_default_https_context = ssl._create_unverified_context
 
-import httpx
-_original_client_init = httpx.Client.__init__
-def _patched_client_init(self, *args, **kwargs):
-    kwargs["verify"] = False
-    _original_client_init(self, *args, **kwargs)
-httpx.Client.__init__ = _patched_client_init
-
+import requests
 import chromadb
-from chromadb.utils.embedding_functions import SentenceTransformerEmbeddingFunction
 
 CHUNKS_FILE = "data/chunks/chunks.txt"
 CHROMA_DIR = "./chroma_db"
 COLLECTION_NAME = "hdfc_faq"
 EMBED_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
+HF_API_URL = f"https://api-inference.huggingface.co/pipeline/feature-extraction/{EMBED_MODEL}"
+HF_API_TOKEN = os.environ.get("HF_API_TOKEN", "")
+
+
+class HuggingFaceEmbeddingFunction:
+    def __init__(self):
+        self._headers = {"Authorization": f"Bearer {HF_API_TOKEN}"}
+
+    def __call__(self, input):
+        return self.embed_documents(input)
+
+    def embed_query(self, text):
+        return self._embed([text])[0]
+
+    def embed_documents(self, texts):
+        return self._embed(texts)
+
+    def _embed(self, texts):
+        resp = requests.post(
+            HF_API_URL,
+            headers=self._headers,
+            json={"inputs": texts},
+            timeout=60,
+        )
+        resp.raise_for_status()
+        return resp.json()
 
 
 def parse_chunks_file(path):
@@ -56,7 +75,7 @@ def main():
     chunks = parse_chunks_file(CHUNKS_FILE)
     print(f"Parsed {len(chunks)} chunks from {CHUNKS_FILE}")
 
-    embedding_fn = SentenceTransformerEmbeddingFunction(model_name=EMBED_MODEL)
+    embedding_fn = HuggingFaceEmbeddingFunction()
 
     client = chromadb.PersistentClient(path=CHROMA_DIR)
 

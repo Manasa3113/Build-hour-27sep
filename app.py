@@ -4,42 +4,47 @@ import ssl
 os.environ["HF_HUB_DISABLE_XET"] = "1"
 ssl._create_default_https_context = ssl._create_unverified_context
 
+import requests
 import streamlit as st
 from langchain_chroma import Chroma
 from langchain_groq import ChatGroq
-from chromadb.utils.embedding_functions import SentenceTransformerEmbeddingFunction
 
 from chains import build_rag_chain, CHROMA_DIR, COLLECTION_NAME, TOP_K
 from memory import ConversationMemory
 from config import GROQ_API_KEY, GROQ_MODEL
 
 EMBED_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
+HF_API_URL = f"https://api-inference.huggingface.co/pipeline/feature-extraction/{EMBED_MODEL}"
+HF_API_TOKEN = os.environ.get("HF_API_TOKEN", "")
 
 
-class FlatEmbeddingFunction:
-    def __init__(self, model_name):
-        self._fn = SentenceTransformerEmbeddingFunction(
-            model_name=model_name,
-            cache_folder="/tmp/hf_cache",
-            model_kwargs={"device": "cpu"},
-        )
+class HuggingFaceEmbeddingFunction:
+    def __init__(self):
+        self._headers = {"Authorization": f"Bearer {HF_API_TOKEN}"}
 
     def __call__(self, input):
-        result = self._fn(input)
-        if isinstance(result, list) and len(result) == 1 and isinstance(result[0], (list, tuple)):
-            return result[0]
-        return result
+        return self.embed_documents(input)
 
     def embed_query(self, text):
-        return self._fn([text])[0]
+        return self._embed([text])[0]
 
     def embed_documents(self, texts):
-        return self._fn(texts)
+        return self._embed(texts)
+
+    def _embed(self, texts):
+        resp = requests.post(
+            HF_API_URL,
+            headers=self._headers,
+            json={"inputs": texts},
+            timeout=60,
+        )
+        resp.raise_for_status()
+        return resp.json()
 
 
 @st.cache_resource
 def get_embedding_fn():
-    return FlatEmbeddingFunction(EMBED_MODEL)
+    return HuggingFaceEmbeddingFunction()
 
 
 @st.cache_resource
