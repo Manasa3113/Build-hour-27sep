@@ -13,7 +13,7 @@ from chains import build_rag_chain, CHROMA_DIR, COLLECTION_NAME, TOP_K
 from memory import ConversationMemory
 from config import GROQ_API_KEY, GROQ_MODEL
 
-EMBED_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
+EMBED_MODEL = "sentence-transformers/paraphrase-MiniLM-L3-v2"
 
 
 class FlatEmbeddingFunction:

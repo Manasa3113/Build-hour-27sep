@@ -12,7 +12,7 @@ from chromadb.utils.embedding_functions import SentenceTransformerEmbeddingFunct
 CHUNKS_FILE = "data/chunks/chunks.txt"
 CHROMA_DIR = "./chroma_db"
 COLLECTION_NAME = "hdfc_faq"
-EMBED_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
+EMBED_MODEL = "sentence-transformers/paraphrase-MiniLM-L3-v2"
 
 
 def parse_chunks_file(path):
