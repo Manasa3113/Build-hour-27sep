@@ -13,7 +13,7 @@ CHUNKS_FILE = "data/chunks/chunks.txt"
 CHROMA_DIR = "./chroma_db"
 COLLECTION_NAME = "hdfc_faq"
 EMBED_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
-HF_API_URL = f"https://api-inference.huggingface.co/pipeline/feature-extraction/{EMBED_MODEL}"
+HF_API_URL = f"https://api-inference.huggingface.co/models/{EMBED_MODEL}"
 HF_API_TOKEN = os.environ.get("HF_API_TOKEN", "")
 
 
